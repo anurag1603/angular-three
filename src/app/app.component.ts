@@ -40,8 +40,8 @@ export class AppComponent implements OnInit, AfterViewInit {
     const geometry = new THREE.BoxGeometry(6.5, 6.5, 6.5);
     
     const Fmaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, opacity: 0.5, transparent: true, side:THREE.BackSide });
-    const material = new THREE.MeshBasicMaterial({ color: 0xeeeeee, opacity: 0.5, transparent: true, side:THREE.BackSide }); 
-    const Bmaterial = new THREE.MeshBasicMaterial({ color: 0x000000, opacity: 0.5, transparent: true, side:THREE.BackSide });
+    const material = new THREE.MeshBasicMaterial({ color: 0xdfdfdf, opacity: 0.5, transparent: true, side:THREE.DoubleSide }); 
+    const Bmaterial = new THREE.MeshBasicMaterial({ color: 0xdfdfdf, opacity: 0.5, transparent: true, side:THREE.DoubleSide });
 
 
 var BackMaterial;
@@ -51,7 +51,7 @@ var BackMaterial;
       texture.repeat.x = - 1;
       // in this example we create the material when the texture is loaded
        BackMaterial = new THREE.MeshBasicMaterial( {
-        map: texture, side:THREE.BackSide
+        map: texture, side:THREE.DoubleSide
        });
        const materials = [material, Bmaterial, Bmaterial, Bmaterial, Fmaterial, BackMaterial ];
      
@@ -64,25 +64,45 @@ var BackMaterial;
 
   }
 
-  createSpeaker(){
-    // can be used for speakers 
+
+
+  createSpeaker() {
+    // can be used for speakers
+
     const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-    const material = new THREE.MeshBasicMaterial({ color: 0x0000ff, opacity: 0.1 });
+    const material = new THREE.MeshBasicMaterial({ color: 0xc8c8c8, opacity: 1 });
+    const edges = new THREE.EdgesGeometry(geometry);
+    const borderColor = new THREE.LineBasicMaterial( { color: 0x000000 });
 
+    
+
+
+    const line = new THREE.LineSegments(edges, borderColor);
     const cube = new THREE.Mesh(geometry, material);
+    line.position.x = 3;
     cube.position.x = 3;
+    this.scene.add(line);
+    this.scene.add(cube);
 
+    const line2 = new THREE.LineSegments(edges, borderColor);
     const cube2 = new THREE.Mesh(geometry, material);
+    line2.position.x = 3;
     cube2.position.x = -3;
+    this.scene.add(line2);
+    this.scene.add(cube2);
 
+    const line3 = new THREE.LineSegments(edges, borderColor);
     const cube3 = new THREE.Mesh(geometry, material);
+    line3.position.y = -3;
+    // edges.pos
+    // line3.position.set(0, -3, -3);
+    line3.position.z = -3;
     cube3.position.y = -3;
     cube3.position.z = -3;
-
-    this.scene.add(cube);
-    this.scene.add(cube2);
+    this.scene.add(line3);
     this.scene.add(cube3);
-    return cube;
+
+    // return cube;
   }
 
 
@@ -103,6 +123,12 @@ var BackMaterial;
       this.renderer.render(this.scene, this.camera);
     };
     animate();
+  }
+
+
+  public reset() {
+    this.camera.position.z = 10;
+    
   }
 
 }
