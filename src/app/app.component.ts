@@ -1,6 +1,12 @@
 import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
+import { TTFLoader } from 'three/examples/jsm/loaders/TTFLoader.js'
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry'
+// import { font }  from 'node_modules/three/examples/fonts/droid/';
+import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+// import { TextSprite } from 'three/examples/jsm/renderers/TextSprite.js';
 
 
 @Component({
@@ -16,6 +22,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   camera: THREE.PerspectiveCamera;
   renderer: THREE.WebGLRenderer;
   controls: OrbitControls;
+  labelRenderer: CSS2DRenderer;
 
 
   ngOnInit() {
@@ -51,7 +58,8 @@ var BackMaterial;
       texture.repeat.x = - 1;
       // in this example we create the material when the texture is loaded
        BackMaterial = new THREE.MeshBasicMaterial( {
-        map: texture, side:THREE.DoubleSide
+          map: texture, 
+          side:THREE.BackSide
        });
        const materials = [material, Bmaterial, Bmaterial, Bmaterial, Fmaterial, BackMaterial ];
      
@@ -66,57 +74,56 @@ var BackMaterial;
 
 
 
-  createSpeaker() {
-    // can be used for speakers
+  createSpeakers() {
+    // x,y,z postions of each speaker in btw -3 and 3 which is the theatre cube side
+    const speakersPosition: any = [[3,0,0, 'Rrs'],[-3,0,0,'Lrs'],[0,-3,-3,'LFE'], [3,3,-3.4, 'R'], [0,3,-3, 'C'], [-3,3,-3, 'L']];
+    
 
     const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
     const material = new THREE.MeshBasicMaterial({ color: 0xc8c8c8, opacity: 1 });
     const edges = new THREE.EdgesGeometry(geometry);
     const borderColor = new THREE.LineBasicMaterial( { color: 0x000000 });
 
+
+    this.labelRenderer = new CSS2DRenderer();
+    this.labelRenderer.setSize(window.innerWidth, window.innerHeight);
+    this.labelRenderer.domElement.style.position = 'absolute';
+    this.labelRenderer.domElement.style.top = '0px';
+    this.labelRenderer.domElement.style.pointerEvents = 'none';
+    this.labelRenderer.domElement.style.fontSize = '12px';
+    document.body.appendChild(this.labelRenderer.domElement);
+
     
+    for(let i = 0; i < speakersPosition.length; i++) {
 
+      let line = [], cube =[], p = [], cPointLabel = [];
+      line[i] = new THREE.LineSegments(edges, borderColor);
+      cube[i] = new THREE.Mesh(geometry, material);
+      p[i] = document.createElement('p');
+      p[i].textContent = speakersPosition[i][3];
+      cPointLabel[i] = new CSS2DObject(p[i]);
+      this.scene.add(cPointLabel[i]);
+      cPointLabel[i].position.set(speakersPosition[i][0], speakersPosition[i][1]-0.5, speakersPosition[i][2]);
+      line[i].position.set(speakersPosition[i][0],speakersPosition[i][1],speakersPosition[i][2]);
+      cube[i].position.set(speakersPosition[i][0],speakersPosition[i][1],speakersPosition[i][2]);
+      this.scene.add(line[i]);
+      this.scene.add(cube[i]);
+    }
 
-    const line = new THREE.LineSegments(edges, borderColor);
-    const cube = new THREE.Mesh(geometry, material);
-    line.position.x = 3;
-    cube.position.x = 3;
-    this.scene.add(line);
-    this.scene.add(cube);
-
-    const line2 = new THREE.LineSegments(edges, borderColor);
-    const cube2 = new THREE.Mesh(geometry, material);
-    line2.position.x = 3;
-    cube2.position.x = -3;
-    this.scene.add(line2);
-    this.scene.add(cube2);
-
-    const line3 = new THREE.LineSegments(edges, borderColor);
-    const cube3 = new THREE.Mesh(geometry, material);
-    line3.position.y = -3;
-    // edges.pos
-    // line3.position.set(0, -3, -3);
-    line3.position.z = -3;
-    cube3.position.y = -3;
-    cube3.position.z = -3;
-    this.scene.add(line3);
-    this.scene.add(cube3);
-
-    // return cube;
   }
-
 
   ngAfterViewInit() {
 
     this.initializeData();
     this.createTheatre();
-    this.createSpeaker();
+    this.createSpeakers();
     
     //controls.update() must be called after any manual changes to the camera's transform
     this.controls.update();
         
     this.renderer.render(this.scene, this.camera);
     const animate = () => {
+      this.labelRenderer.render(this.scene, this.camera);
       requestAnimationFrame(animate);
       // required if controls.enableDamping or controls.autoRotate are set to true
       this.controls.update();
