@@ -1,13 +1,14 @@
 import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
+import { Font, FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 import { TTFLoader } from 'three/examples/jsm/loaders/TTFLoader.js'
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry'
 // import { font }  from 'node_modules/three/examples/fonts/droid/';
 import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+import { Mesh, MeshPhongMaterial, Vector2 } from 'three';
 // import { TextSprite } from 'three/examples/jsm/renderers/TextSprite.js';
-
+import {PrismGeometry }  from './prism';
 
 @Component({
   selector: 'app-root',
@@ -50,53 +51,54 @@ export class AppComponent implements OnInit, AfterViewInit {
   createTheatre() {
 
     
+    
     const geometry = new THREE.BoxGeometry(6.5, 4.5, 6.5);
     
     const Fmaterial = new THREE.MeshBasicMaterial({ color: 0x000, opacity: 0.5, transparent: true, side:THREE.BackSide });
     const material = new THREE.MeshBasicMaterial({ color: 0x000, opacity: 0.5, transparent: true, side:THREE.DoubleSide }); 
     const Bmaterial = new THREE.MeshBasicMaterial({ color: 0x000, opacity: 0.5, transparent: true, side:THREE.DoubleSide });
+    const Wmaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, opacity: 0.5, transparent: true, side:THREE.DoubleSide }); 
 
-const Wmaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, opacity: 0.5, transparent: true, side:THREE.DoubleSide }); 
-    
+    var BackMaterial;
+    const loader = new THREE.TextureLoader();
+    loader.load('../assets/Untitled.png', (texture) => {
+      console.log('texture', texture);
+      // loader.load('../assets/cinema-seating-plan.png', (seatingPlan) => { 
+        console.log('cinema-seating-plan.png');
 
-var BackMaterial;
-   const loader = new THREE.TextureLoader();
-   loader.load('../assets/Untitled.png', (texture) => {
-
-    loader.load('../assets/cinema-seating-plan.png', (seatingPlan) => { 
-
-      texture.wrapS = THREE.RepeatWrapping;
-      texture.repeat.x = - 1;
-      // in this example we create the material when the texture is loaded
-       BackMaterial = new THREE.MeshBasicMaterial( {
-          map: texture, 
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.repeat.x = - 1;
+        // in this example we create the material when the texture is loaded
+        BackMaterial = new THREE.MeshBasicMaterial( {
+          map: texture,
           side:THREE.BackSide
-       });
-
-       seatingPlan.wrapS = THREE.RepeatWrapping;
-       seatingPlan.repeat.x = - 1;
-       // in this example we create the material when the texture is loaded
-        const LowerSeatingPlanmaterial = new THREE.MeshBasicMaterial( {
-           map: seatingPlan, 
-           side:THREE.BackSide,
-           color: 0xdfdfdf
         });
+
+      //  seatingPlan.wrapS = THREE.RepeatWrapping;
+      //  seatingPlan.repeat.x = - 1;
+       // in this example we create the material when the texture is loaded
+        // const LowerSeatingPlanmaterial = new THREE.MeshBasicMaterial( {
+        //    map: seatingPlan, 
+        //    side:THREE.BackSide,
+        //    color: 0xdfdfdf
+        // });
 
 
         // left right and top --> black 
-       const materials = [material, Fmaterial, Fmaterial, LowerSeatingPlanmaterial, Fmaterial, BackMaterial ];
+       const materials = [material, Fmaterial, Fmaterial, material, Fmaterial, BackMaterial ];
      
        const cube = new THREE.Mesh(geometry, materials);
-      //  const PlaneGeometry = new THREE.PlaneGeometry(6.5,6.5);
-      // const plane = new THREE.Mesh( PlaneGeometry, LowerSeatingPlanmaterial );
-      // this.scene.add( plane );
-      // plane.position.set(0,-1.75,0);
-      // plane.rotateX(-30);
+       const PlaneGeometry = new THREE.PlaneGeometry(6.5,6.5);
+      const plane = new THREE.Mesh(PlaneGeometry, material );
+      console.log(plane, '---------->');
+      this.scene.add(plane);
+      plane.position.set(0,-1.75,0);
+      plane.rotateX(-30);
        const edges = new THREE.EdgesGeometry(geometry);
        const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial( { color: 0xdddddd } ));
        this.scene.add(line);
        this.scene.add(cube);
-    });
+    // });
     });
 
   }
@@ -141,8 +143,8 @@ var BackMaterial;
     [3, 0, 0, 'Rss2'], [-3, 0, 0, 'Lss2'],
      [3, 0, -1.5, 'Rss1'], [-3,0,-1.5,'Lss1']];
 
-    // this.speakersPosition = this.Immersive;
-      this.speakersPosition = this.normalTheatre;
+    this.speakersPosition = this.Immersive;
+      // this.speakersPosition = this.normalTheatre;
 
 
     const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
@@ -159,10 +161,27 @@ var BackMaterial;
     this.labelRenderer.domElement.style.fontSize = '12px';
     this.labelRenderer.domElement.style.fontWeight = 'bold';
     this.labelRenderer.domElement.style.color = 'red';
-    
     document.body.appendChild(this.labelRenderer.domElement);
 
+
+    const loader = new FontLoader();
+
+    loader.load( 'fonts/helvetiker_regular.typeface.json',  ( font ) =>  {
     
+      const geometry = new TextGeometry( 'Hello three.js!', {
+        font: font,
+        size: 80,
+        curveSegments: 12,
+        bevelEnabled: true,
+        bevelThickness: 10,
+        bevelSize: 8,
+        bevelOffset: 0,
+        bevelSegments: 5
+      });
+      const textMesh1 = new THREE.Mesh(geometry, material );
+      this.scene.add(textMesh1)
+    });
+
     for(let i = 0; i < this.speakersPosition.length; i++) {
 
       let line = [], cube =[], p = [], cPointLabel = [];
@@ -190,18 +209,38 @@ var BackMaterial;
     }
   }
 
+  enableControls() {
+    this.controls.enabled = true;
+    // this.controls.ena
+  }
+
   ngAfterViewInit() {
 
     this.initializeData();
     this.createTheatre();
     this.createSpeakers();
+ // Define the dimensions of the prism
+ const width = 2;
+ const height = 3;
+ const depth = 4;
+
+ // Create a BoxGeometry to define the shape of the prism
+//  const prismGeometry = new THREE.BoxGeometry(width, height, depth);
+
+ // Define the material for the prism
+//  const material = new THREE.MeshBasicMaterial({ color: 'red', side: THREE.DoubleSide });
+
+ // Create a mesh and add it to the scene
+//  const mesh = new THREE.Mesh(prismGeometry, material);
+    // this.scene.add(mesh);
     
     //controls.update() must be called after any manual changes to the camera's transform
     this.controls.update();
+    this.controls.enabled = true;
         
     this.renderer.render(this.scene, this.camera);
     const animate = () => {
-      this.labelRenderer.render(this.scene, this.camera);
+      this.labelRenderer?.render(this.scene, this.camera);
       requestAnimationFrame(animate);
       // required if controls.enableDamping or controls.autoRotate are set to true
       this.controls.update();
@@ -218,3 +257,4 @@ var BackMaterial;
 
 }
  
+
